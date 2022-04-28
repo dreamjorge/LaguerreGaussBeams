@@ -7,11 +7,22 @@
 % propagation of laguerre, this is a good base for scripts repo
 % 2^9 x 2^9 x 2 ^8 matrix aprox 1 gb
 % find blue cyan color in scripts for plots on laguerre.
+
+
+folder = fileparts(which(mfilename)); 
+% Add that folder plus all subfolders to the path.
+addpath(genpath(folder));
+
+
+
 %--------Propagacion paraxial (unidades fisicas) por espectro angular-----%
+
+
+
 mapgreen = AdvancedColormap('kbcw',256,[0 30 100 255]/255);  %color del haz
 %---------------------------indices Laguerre Gauss------------------------%
-nu = 20;
-mu = 0;
+nu = 10;
+mu = 10;
 %% Physical parameters [microns]
 initialWaist     = 100;
 wavelength       = 0.6328;
@@ -38,7 +49,7 @@ waistZ  = initialWaist*sqrt(1+Dz.^2/RayleighDistance^2);
 sigmaLZ = waistZ*sqrt((2*nu+mu+1));
 
 % y,x-direction
-Nx  =  2^10;                % Number of points in x,y axis
+Nx  =  2^9;                % Number of points in x,y axis
 n   = -Nx/2+.05:Nx/2-1+.05; % vector with N-points with resolution 1
 Dx  = (2*sigmaLZ)*1.37;      % Size of window 
 dx  = Dx/Nx;                % Resolution
@@ -60,7 +71,7 @@ kx     = 2*pi*u;
 %%
 Nth =  2^10;                % Number of points in x,y axis
 nth   = -Nth/2:Nth/2-1; % vector with N-points with resolution 1
-Dth = pi;      % Size of window 
+Dth = 2*pi;      % Size of window 
 dth = Dth/Nth;                % Resolution
 th  = nth*dth;                 % Vector
 
@@ -87,7 +98,7 @@ H2 = Ln-1i*Xn;
 
 % Función a propagar (Recuerde normalizar respecto al máximo de la función
 % en cuestión)
-g = H1;
+g = Ln;
 % Graficando Laguerre
 figure(1)
 pcolor(xNormalized,xNormalized,abs(g).^2)
@@ -100,16 +111,16 @@ pxy=max(max(g));
 
 %---------------Funcion a propagar con obstrucción en z=0-----------------%
 sigmaLZ0  = initialWaist*sqrt((2*nu+mu+1)); % cintura de Laguerre en z=0
-radiusObs = sigmaLZ0/1000;%%sigmaLZ0/4;%sigmaLo/4;          % tamaño de la obstrucción (radio de la obstruccion)
+radiusObs = sigmaLZ0/4;%%sigmaLZ0/4;%sigmaLo/4;          % tamaño de la obstrucción (radio de la obstruccion)
 %traslado
-xt = 0;...1.1*radiusObs;%.15*sigmaLo;
+xt = 1.1*radiusObs;...1.1*radiusObs;%.15*sigmaLo;
 yt = 0;   %xt=0;
 
 [~,ro]      = cart2pol(X-xt,X'-yt);   %aplicando la traslación a coordendas xy
 obstruction = double(ro<=radiusObs);  %creando la obstrucción   
 clear ro                              %limpiando coordenadas trasladadas
 % Función a propagar con obstrucción
-% g=g.*(1-obstruction);
+g=g.*(1-obstruction);
 
 figure(2)
 pcolor(xNormalized,xNormalized,abs(g))
@@ -139,11 +150,6 @@ end
 %cualquier rayo por lo que las calculamos antes del ciclo for
 zDistance = z(1);
 
-H1r = exp(1i*mu*th).*(     laguerregz(nu,mu,initialWaist,RayleighDistance,x,zDistance)...
-                    + 1i*pxlaguerregz(nu,mu,initialWaist,RayleighDistance,x,zDistance));
-
-H2r = exp(1i*mu*th).*(     laguerregz(nu,mu,initialWaist,RayleighDistance,x,zDistance)...
-                    - 1i*pxlaguerregz(nu,mu,initialWaist,RayleighDistance,x,zDistance));
 
 for ray_index = 1:pn
     %en que punto de la circunferencia estamos en x,y
@@ -153,21 +159,40 @@ for ray_index = 1:pn
     rayo(ray_index).xc = xi; 
     rayo(ray_index).yc = yi;
     %calculando el radio al origen de cada punto
-    ri = sqrt((xi)^2+(yi)^2);    
+    [thi,ri]=cart2pol(xi,yi);
     %calculo de las pendientes en el punto (r,z)  Hankel 1
     % para r=cte;
+
+    H1r = exp(1i*mu*thi).*(     laguerregz(nu,mu,initialWaist,RayleighDistance,x,zDistance)...
+                        + 1i*pxlaguerregz(nu,mu,initialWaist,RayleighDistance,x,zDistance));
+
+    H1th = exp(1i*mu*TH).*(     laguerregz(nu,mu,initialWaist,RayleighDistance,ri,zDistance)...
+                         + 1i*pxlaguerregz(nu,mu,initialWaist,RayleighDistance,ri,zDistance));
+
     H1z =      laguerregz(nu,mu,initialWaist,RayleighDistance,ri,z)...
         + 1i*pxlaguerregz(nu,mu,initialWaist,RayleighDistance,ri,z);
     % pendiente para el frente de onda para cada punto y guardandola
-    [mzr,mzth,mrth] = gradientrthz(unwrap(angle(H1r)),unwrap(angle(H1z)),k,dx,dz,ri,zDistance);
-    rayo(ray_index).mH1 = mzr;
+    [mzrH1,mzthH1,mrthH1] = gradientrthz(unwrap(angle(H1r )), ...
+                                         unwrap(angle(H1th)), ...
+                                         unwrap(angle(H1z )),k,dx,dth,dz,ri,thi,zDistance);
+    rayo(ray_index).mH1 = mzrH1;
     
     %calculo de las pendientes en el punto (r,z)  Hankel 2
+
+
+    H2r = exp(1i*mu*thi).*(     laguerregz(nu,mu,initialWaist,RayleighDistance,x,zDistance)...
+                        - 1i*pxlaguerregz(nu,mu,initialWaist,RayleighDistance,x,zDistance));
+
+    H2th = exp(1i*mu*TH).*(     laguerregz(nu,mu,initialWaist,RayleighDistance,ri,zDistance)...
+                         - 1i*pxlaguerregz(nu,mu,initialWaist,RayleighDistance,ri,zDistance));
+
     H2z =      laguerregz(nu,mu,initialWaist,RayleighDistance,ri,z)...
         - 1i*pxlaguerregz(nu,mu,initialWaist,RayleighDistance,ri,z);
     
-    [mzr,mzth,mrth] = gradientrthz(unwrap(angle(H2r)),unwrap(angle(H2z)),k,dx,dz,ri,zDistance); 
-    rayo(ray_index).mH2 = mzr; 
+    [mzrH2,mzthH2,mrthH2] = gradientrthz(unwrap(angle(H2r)), ...
+                                         unwrap(angle(H2th)), ...
+                                         unwrap(angle(H2z)),k,dx,dth,dz,ri,thi,zDistance); 
+    rayo(ray_index).mH2 = mzrH2; 
 end
 
 % Graficando los puntos que se propagaran
@@ -243,10 +268,10 @@ for z_index = 2:length(z) %corriendo todos los valores de sp
         
         xRay = scaleFactorX*rayo(ray_index).xH2(z_index-1);
         yRay = scaleFactorX*rayo(ray_index).yH2(z_index-1); 
-%         plot(xRay, yRay,'+','MarkerSize',10,'LineWidth',2,'color','y')
+        plot(xRay, yRay,'+','MarkerSize',10,'LineWidth',2,'color','y')
     end
-%     text(-5,5,[' z = ',num2str(z(ii-1))],'Color','y','FontSize',16)
-%     text(-6,6,[' z = ',num2str(scaleFactorZ*z(z_index-1))],'Color','y','FontSize',16)
+    text(-5,5,[' z = ',num2str(z(ii-1))],'Color','y','FontSize',16)
+    text(-6,6,[' z = ',num2str(scaleFactorZ*z(z_index-1))],'Color','y','FontSize',16)
     hold off
     g(1,1) = pxyz;
 %     writeVideo(vidObj1, getframe(gca));
@@ -275,10 +300,17 @@ for z_index = 2:length(z) %corriendo todos los valores de sp
         %-----------Calculando las pendientes del siguiente paso----------%
         %calculo de la pendiente en (r,z(ii)) de Hankel 1
         % para r=cte;
+        H1th = exp(1i*mu*TH).*(     laguerregz(nu,mu,initialWaist,RayleighDistance,rH1,zDistance)...
+                             + 1i*pxlaguerregz(nu,mu,initialWaist,RayleighDistance,rH1,zDistance));
+
+
         H1z =      laguerregz(nu,mu,initialWaist,RayleighDistance,rH1,z)...
             + 1i*pxlaguerregz(nu,mu,initialWaist,RayleighDistance,rH1,z);
-        [mzr,mzth,mrth] = gradientrthz(unwrap(angle(H1r)),unwrap(angle(H1z)),k,dx,dz,rH1,zDistance);
-        mH1 = mzr;
+
+        [mzrH1,mzthH1,mrthH1] = gradientrthz(unwrap(angle(H1r )), ...
+                                             unwrap(angle(H1th)), ...
+                                             unwrap(angle(H1z )),k,dx,dth,dz,ri,thi,zDistance);
+        mH1 = mzrH1;
         rayo(ray_index).mH1 = mH1;
         %calculo de la pendiente en (r,z(ii)) de Hankel 2
         %Aqui el rayo que entra debido a Hankel 1 despues se rige por Hankel 2
@@ -302,16 +334,26 @@ for z_index = 2:length(z) %corriendo todos los valores de sp
         if  rH2<0
             H2r =      laguerregz(nu,mu,initialWaist,RayleighDistance,x,zDistance)...
                 + 1i*pxlaguerregz(nu,mu,initialWaist,RayleighDistance,x,zDistance);
+            H2th = exp(1i*mu*TH).*(     laguerregz(nu,mu,initialWaist,RayleighDistance,rH2,zDistance)...
+                                 + 1i*pxlaguerregz(nu,mu,initialWaist,RayleighDistance,rH2,zDistance));
+
             H2z =      laguerregz(nu,mu,initialWaist,RayleighDistance,rH2,z) ...
                 + 1i*pxlaguerregz(nu,mu,initialWaist,RayleighDistance,rH2,z);
         else
             H2r =      laguerregz(nu,mu,initialWaist,RayleighDistance,x,zDistance)...
                 - 1i*pxlaguerregz(nu,mu,initialWaist,RayleighDistance,x,zDistance);
+            H2th = exp(1i*mu*TH).*(     laguerregz(nu,mu,initialWaist,RayleighDistance,rH2,zDistance)...
+                                 + 1i*pxlaguerregz(nu,mu,initialWaist,RayleighDistance,rH2,zDistance));
+
             H2z =      laguerregz(nu,mu,initialWaist,RayleighDistance,rH2,z)...
                 - 1i*pxlaguerregz(nu,mu,initialWaist,RayleighDistance,rH2,z);
         end
-        [mzr,mzth,mrth] = gradientrthz(unwrap(angle(H2r)),unwrap(angle(H2z)),k,dx,dz,rH2,zDistance);
-        mH2 = mzr;
+
+        [mzrH2,mzthH2,mrthH2] = gradientrthz(unwrap(angle(H2r)), ...
+                                             unwrap(angle(H2th)), ...
+                                             unwrap(angle(H2z)),k,dx,dth,dz,ri,thi,zDistance); 
+
+        mH2 = mzrH2;
         rayo(ray_index).mH2 = mH2;
     end
     %-----------------------Fin de Calculo de Rayos-----------------------%   
@@ -324,7 +366,7 @@ for z_index = 2:length(z) %corriendo todos los valores de sp
     gy(:,z_index)   = g(:,Nx/2+1);
     gg(:,z_index,:) = g';
 
-    pause(.1)
+    pause(.01)
 end
 
 %graficando el campo en z
