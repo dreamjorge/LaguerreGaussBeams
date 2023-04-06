@@ -1,4 +1,4 @@
-function [Xnmr]= XLaguerre(r,n,m,x)
+function [Xnmr]= XLaguerreAssociated(n,m,x)
 
 %Empecemos por los términos que vamos a sumar
 % La segunda solución metida en Mathematica está en Talachita de mi osita
@@ -18,10 +18,10 @@ function [Xnmr]= XLaguerre(r,n,m,x)
 % r=vpa(150,20);
 
 %%%%%%%%%%%%%%%%%%%%
-
+n_terms = 97;
 a1=x.^(n+1)/(gamma(n+2)*gamma(m+1+n+1));
 
-for k=n+2:r        %Empezamos a calcular la suma
+for k=n+2:n_terms        %Empezamos a calcular la suma
     
     a1=a1+gamma(k-n)*x.^k/(gamma(k+1)*gamma(m+1+k));
     

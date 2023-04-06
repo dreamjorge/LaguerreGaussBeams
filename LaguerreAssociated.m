@@ -1,10 +1,4 @@
-% function [Ln]= LagG(n,m,x)
-% 
-% Ln=1./(gamma(m+1)*exp(x./2).*((n+(m+1)/2)*x).^(-m/2)).*hypergeom(-n,m+1,x);
-% 
-% end
-
-function [Ln]= LaguerreG(n,m,x)
+function [Ln]= LaguerreAssociated(n,m,x)
 
 if n==0
     
@@ -32,8 +26,3 @@ else
     end
     
 end
-
-Ln=(gamma(n+1)/gamma(n+m+1))./(exp(x./2).*((n+(m+1)/2)*x).^(-m/2)).*LaguerreAssociated(n,m,x);
-            
-end 
-    
