@@ -33,7 +33,8 @@ else
     
 end
 
-Ln=(gamma(n+1)/gamma(n+m+1))./(exp(x./2).*((n+(m+1)/2)*x).^(-m/2)).*LaguerreAssociated(n,m,x);
+Cnm = (gamma(n+1)/gamma(n+m+1));
+Ln = Cnm.*(exp(-x./2).*((n+(m+1)/2)*x).^(-m/2)).*LaguerreAssociated(n,m,x);
             
 end 
     
