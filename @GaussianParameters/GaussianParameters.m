@@ -67,19 +67,19 @@ classdef GaussianParameters <  handle & matlab.mixin.Copyable
   end
   methods
 
-    function Parameters = GaussianParameters(NameValueArgs)
-      arguments
-        NameValueArgs.zCoordinate  (1,:) double {mustBeNumeric,mustBeReal}
-        NameValueArgs.initialWaist (1,1) double {mustBeNumeric,mustBeReal,mustBePositive}
-        NameValueArgs.wavelength   (1,1) double {mustBeNumeric,mustBeReal,mustBePositive}
-        NameValueArgs.units        (1,1) string
-      end
+    function Parameters = GaussianParameters(zCoordinate, initialWaist, wavelength, units)
+%       arguments
+%         NameValueArgs.zCoordinate  (1,:) double {mustBeNumeric,mustBeReal}
+%         NameValueArgs.initialWaist (1,1) double {mustBeNumeric,mustBeReal,mustBePositive}
+%         NameValueArgs.wavelength   (1,1) double {mustBeNumeric,mustBeReal,mustBePositive}
+%         NameValueArgs.units        (1,1) string
+%       end
      %% Constructor of Gaussian Beam   
 %       if nargin == 4 
-        Parameters.zCoordinate  = NameValueArgs.zCoordinate;
-        Parameters.initialWaist = NameValueArgs.initialWaist;
-        Parameters.wavelength   = NameValueArgs.wavelength;
-        Parameters.units        = NameValueArgs.units;
+        Parameters.zCoordinate  = zCoordinate;
+        Parameters.initialWaist = initialWaist;
+        Parameters.wavelength   = wavelength;
+        Parameters.units        = units;
 %       else
 %          error('You need introduce zCoordinate, initialWaist, wavelength and units as inputs')
 %       end

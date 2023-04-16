@@ -71,19 +71,19 @@ classdef LaguerreParameters < GaussianParameters & handle & matlab.mixin.Copyabl
       %% LaguerreParameters Object
       % generation of object with arguments inputs
       
-      arguments
-        zCoordinate   (1,:) double {mustBeNumeric,mustBeReal}
-        initialWaist  (1,1) double {mustBeNumeric,mustBeReal,mustBePositive}
-        wavelength    (1,1) double {mustBeNumeric,mustBeReal,mustBePositive}
-        l             (1,1) double {mustBeNumeric,mustBeReal,mustBeInteger}
-        p             (1,1) double {mustBeNumeric,mustBeReal,mustBeInteger}
-        units         (1,1) string
-      end
+%       arguments
+%         zCoordinate   (1,:) double {mustBeNumeric,mustBeReal}
+%         initialWaist  (1,1) double {mustBeNumeric,mustBeReal,mustBePositive}
+%         wavelength    (1,1) double {mustBeNumeric,mustBeReal,mustBePositive}
+%         l             (1,1) double {mustBeNumeric,mustBeReal,mustBeInteger}
+%         p             (1,1) double {mustBeNumeric,mustBeReal,mustBeInteger}
+%         units         (1,1) string
+%       end
       %Call Gaussian Parameters
-      Parameters@GaussianParameters('zCoordinate', zCoordinate,...
-                                    'initialWaist',initialWaist,...
-                                    'wavelength',  wavelength,...
-                                    'units',       units);
+      Parameters@GaussianParameters(zCoordinate,...
+                                    initialWaist,...
+                                    wavelength,...
+                                    units);
 
       % Add l,p parameters of input to object
       Parameters.l = l;
