@@ -1,42 +1,44 @@
 
 addpath("PlotPub\lib")
 clear
-close all
+% close all
 
 get_default_figure()
 
+n_points = 2^10;
+x = linspace(0,10,n_points);
 
-x = linspace(0,30,1024);
+% n_value = 50;
+% m_value = 11;
+% n_value = 13;
+% m_value = 2;
 
-n_max = 7;
-m_max = 7;
+LGnm = XLaguerreG(n_value,m_value,x);
+% bessely(nu,Z)
+N = n_value + (m_value+1)/2;
+J = 1.... (factorial(n_value+m_value)/factorial(m_value))...
+    ...*exp(x/2)...
+    ...*(N.*x).^(-m_value/2)...
+    .*bessely(m_value,2*sqrt(N*x));
+fig = figure(1);
+%             fig.Position = [2429 367 829 399];
+plot(x,LGnm)
+hold on
+plot(x,J,"--")
+yline(0,'-.');
+hold off
+lg1 = '$B_{mn} {\textbf{e}}^{-x/2}x^{m/2}X_{n}^{m}(x)$';
+lg2 = '$N_m(2\sqrt{Nx})$';
+legend(lg1,lg2,'Interpreter','latex')
+...,'interpreter','latex')
+set(gca, 'FontSize', 14)
+path_file = ['XLaguerreNBessel_n',num2str(n_value),'_m',num2str(m_value),'.png'];
+xlabel('x')
+xlim([0,10])
+ylim([-0.6, 0.6])
+print(path_file, '-dpng', '-r600')
 
-for n_value = 1:n_max
-    for m_value = 1:m_max
-        if m_value <=n_value
-            if m_value == 2 && n_value == 5
-                Ln  = LaguerreAssociated(n_value,m_value,x);
-                XLn = XLaguerreAssociated(n_value,m_value,x);
-                fig = figure(1);
-    %             fig.Position = [2429 367 829 399];
-                plot(x,Ln)
-                hold on
-                plot(x,XLn)
-                yline(0,'-.');
-                hold off
-                lg1 = sprintf('L_{%d}^{%d}(x)', n_value,m_value);
-                lg2 = sprintf('X_{%d}^{%d}(x)', n_value,m_value);
-                legend(lg1,lg2)
-                xlim([0,3*(n_value+1)+m_value])
-                ylim([-3*(m_value*n_value)-2*n_value*(2^n_value),3*(m_value*n_value)+2*n_value*(2^n_value)])
-                set(gca, 'FontSize', 14)
-                path_file = ['LaguerreSol_n',num2str(n_value),'_m',num2str(m_value),'.png'];
-                xlabel('x')
-                print(path_file, '-dpng', '-r600')
-            end
-        end
-    end
-end
+
 
 
 

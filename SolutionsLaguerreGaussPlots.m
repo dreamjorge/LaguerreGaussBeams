@@ -1,44 +1,40 @@
 
 addpath("PlotPub\lib")
 clear
-close all
+% close all
 
 get_default_figure()
 
 
-x = linspace(0,30,1024);
+n_points = 2^10;
+x = linspace(0,60,n_points);
 
-n_max = 7;
-m_max = 7;
+n_value = 4;
+m_value = 1;
 
-for n_value = 1:n_max
-    for m_value = 1:m_max
-        if m_value <=n_value
 
-            Ln  = LaguerreG(n_value,m_value,x);
-            XLn = XLaguerreG(n_value,m_value,x);
-            H = Ln+1i*XLn;
-            fig = figure(1);
+
+Ln  = LaguerreG(n_value,m_value,x);
+XLn = XLaguerreG(n_value,m_value,x);
+H = Ln+1i*XLn;
+fig = figure(1);
 %             fig.Position = [2429 367 829 399];
-            plot(x,Ln)
-            hold on
-            plot(x,XLn)
-            plot(x,abs(H))
-            yline(0,'-.');
-            hold off
-            lg1 = sprintf('L_{%d}^{%d}(x)', n_value,m_value);
-            lg2 = sprintf('X_{%d}^{%d}(x)', n_value,m_value);
-            lg3 = sprintf('HL_{%d}^{%d}(x)', n_value,m_value);
-            legend(lg1,lg2,lg3)
-            xlim([0,3*(n_value+1)+m_value])
-            ylim([-3*(m_value*n_value)-2*n_value*(2^n_value),3*(m_value*n_value)+2*n_value*(2^n_value)])
-            set(gca, 'FontSize', 14)
-            path_file = ['LaguerreGSol_n',num2str(n_value),'_m',num2str(m_value),'.png'];
-            xlabel('x')
-            print(path_file, '-dpng', '-r600')
-        end
-    end
-end
+plot(x,Ln)
+hold on
+plot(x,XLn,'--')
+plot(x,abs(H),'-.','Color',[0.4660 0.6740 0.1880])
+yline(0,'-.');
+hold off
+lg1 = '$a_{mn} {\textbf{e}}^{-x/2}x^{m/2}L_{n}^{m}(x)$';
+lg2 = '$b_{mn} {\textbf{e}}^{-x/2}x^{m/2}X_{n}^{m}(x)$';
+lg3 = '${\textbf{e}}^{-x/2}x^{m/2} \sqrt{a^2_{mn}(L_{n}^{m}(x))^2+b^2_{mn}(X_{n}^{m}(x))^2}$';
+
+legend(lg1,lg2,lg3,'Interpreter','latex')
+set(gca, 'FontSize', 14)
+path_file = ['LaguerreGSol_n',num2str(n_value),'_m',num2str(m_value),'.png'];
+xlabel('x')
+ylim([-1,1])
+print(path_file, '-dpng', '-r600')
 
 
 
