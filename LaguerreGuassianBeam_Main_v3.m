@@ -10,7 +10,7 @@ mapgreen = AdvancedColormap('kbcw',256,[0 30 100 255]/255);  %color del haz
 
 % Parameters for define all parameters of Laguerre
 nu = 14;
-mu = 10;
+mu = 00;
 initialWaist = 100;
 wavelength   = 0.6328;
 initialZ     = 0;
@@ -29,7 +29,7 @@ LPzf = LaguerreParameters(finalZ, initialWaist, wavelength, nu, mu, units);
 %First, we estimate samplig in z-direction with propagation distance 
 % z-direction
 Dz = finalZ;  % z-window (propagation distance)
-Nz = 2^8;     % number of points in z-direction
+Nz = 2^7;     % number of points in z-direction
 dz = Dz/Nz;   % Resolution in z
 nz = 0:Nz-1;  % vector with N-points with resolution 1
 z  = nz*dz;   % z-vector z of propagation 
@@ -90,7 +90,7 @@ pxy=max(max(g));
 sigmaLZ0  = LPz0.laguerreWaist; % cintura de Laguerre en z=0
 radiusObs = sigmaLZ0/5;...4.5 sigmaLZ0/4.5;%%sigmaLZ0/4;%sigmaLo/4;        
 %traslado
-xt = 2.5*radiusObs;... 0.0;...2.3*radiusObs;...1.1*radiusObs;%.15*sigmaLo;
+xt = 1.1*radiusObs;...2.5*radiusObs;... 0.0;...2.3*radiusObs;...1.1*radiusObs;%.15*sigmaLo;
 yt = 0.01;   %xt=0;
 
 [~,ro]      = cart2pol(X-xt,X'-yt);   
@@ -98,9 +98,11 @@ obstruction = double(ro<=radiusObs);
 clear ro                         
 g=g.*(1-obstruction);
 
-total_rays = 50; 
-raysH1 = get_init_rays_structure(xt,yt,radiusObs, total_rays);
-raysH2 = raysH1;
+total_rays = 9; 
+hankel_type = 1;
+raysH1 = get_init_rays_structure(xt, yt, radiusObs, total_rays, hankel_type);
+hankel_type = 2;
+raysH2 = get_init_rays_structure(xt, yt, radiusObs, total_rays, hankel_type);
 
 prop = exp(1i*wavelength*dz*(Kx.^2+(Kx').^2)/(4*pi));
 
@@ -115,6 +117,7 @@ gg(:,1,:) = g';
 v = VideoWriter('LGmomentum.avi');
 open(v);
 
+difcart = [4*dx,4*dx,dz];
 
 for z_index = 2:length(z) 
 
@@ -144,14 +147,16 @@ for z_index = 2:length(z)
         
         % Ray traycing of H1
         %extract info of ray in previous step on z
-        [ri, thi] = get_values_ray(rayH1, ray_index);
-        
-        hankeltype1 = 1;
+        [ri, thi, xi, yi, hankel] = get_values_ray(rayH1, ray_index);
+        pointcylindrical  = [ri,thi,zi];
+        pointcart  = [xi,yi,zi];
+
+%         hankel = 1;
         [H1r,H1th,H1z] = HankelLaguerreGaussrthz(nu, mu, initialWaist, wavelength, ...
                                                  x, th, z, ...
                                                  ri, thi, zi, ...
                                                  units, ... 
-                                                 hankeltype1);
+                                                 hankel);
 
         [grad_f] = CylindricalGradient(unwrap(angle(H1r )), ...
                                        unwrap(angle(H1th)), ...
@@ -160,31 +165,42 @@ for z_index = 2:length(z)
                                        ri, thi, zi, ...
                                        dx, dth, dz);
 
-        [ri, zi, thi] = ray_tracing_cylindrical(ri, zi, thi, grad_f(1), grad_f(3), grad_f(2), sqrt(2)*drho, dz, dth);
+        gradcart = cylindrical2cartesiangrad(grad_f, thi);
+        newpoint = ray_tracing_cartesian(pointcart,gradcart,difcart);
+
+       is_cross = is_cross_point_origin(pointcart, newpoint);
+ 
+       if is_cross
+            hankel = 2;
+       else
+            hankel =  hankel;
+       end
 
         raysH1 = save_actual_values_on_ray(raysH1, z_index, ray_index, ...
-                                           ri, thi,zi);
+                                           newpoint(1), newpoint(2), newpoint(3), hankel);
 
          % Ray traicing H2
-        [ri, thi] = get_values_ray(rayH2, ray_index);
-      
+        hankeltype2 = 2;
+        [ri, thi, xi, yi, hankel] = get_values_ray(rayH2, ray_index);
+        pointcylindrical  = [ri,thi,zi];
+        pointcart  = [xi,yi,zi];     
         [H2r,H2th,H2z] = HankelLaguerreGaussrthz(nu, mu, initialWaist, wavelength, ...
                                                  x, th, z, ...
                                                  ri, thi, zi, ...
                                                  units, ... 
-                                                 2);
+                                                 hankel);
 
-        [grad_H2] = CylindricalGradient(unwrap(angle(H2r )), ...
+        [grad_f] = CylindricalGradient(unwrap(angle(H2r )), ...
                                        unwrap(angle(H2th)), ...
                                        unwrap(angle(H2z )), ...
                                        x, th, z, ...
                                        ri, thi, zi, ...
                                        dx, dth, dz);
-        step = sqrt(dz^2+dx^2+dx^2);
-  
-        [ri, zi, thi] = ray_tracing_cylindrical(ri, zi, thi, grad_H2(1), grad_H2(3), grad_H2(2), sqrt(2)*drho, dz, dth);
+        gradcart = cylindrical2cartesiangrad(grad_f, thi);
+        newpoint = ray_tracing_cartesian(pointcart,gradcart,difcart);
+        
         raysH2 = save_actual_values_on_ray(raysH2, z_index, ray_index, ...
-                                           ri, thi,zi);
+                                           newpoint(1), newpoint(2), newpoint(3), hankel);
 
     end
 
@@ -200,20 +216,48 @@ end
 close(v);
 
 
-function ray = save_actual_values_on_ray(ray, z_index, ray_index, r, th, z)
-        ray(z_index).r(ray_index)    = r;        
-        ray(z_index).th(ray_index)   = th;
-        ray(z_index).x(ray_index)    = r*cos(th);
-        ray(z_index).y(ray_index)    = r*sin(th);
-        ray(z_index).z(ray_index)    = z;
+function is_cross = is_cross_point_origin(point, new_point)
+    is_sign_changed_x = check_sign_change(point(1), new_point(1));
+    is_sign_changed_y = check_sign_change(point(2), new_point(2));
+    is_cross = is_sign_changed_x && is_sign_changed_y;
 end
 
-function [r, th] = get_values_ray(ray,ray_index)
+function is_sign_changed = check_sign_change(x, y)
+% This function returns true if the signs of x and y are different, and
+% false otherwise.
+
+    % Compute the signs of x and y
+    x_sign = sign(x);
+    y_sign = sign(y);
+    
+    % Check if the signs are different
+    if x_sign ~= y_sign
+        is_sign_changed = true;
+    else
+        is_sign_changed = false;
+    end
+end
+
+function ray = save_actual_values_on_ray(ray, z_index, ray_index, x, y, z, hankel_type)
+    [th,r] =cart2pol(x,y);
+    ray(z_index).r(ray_index)      = r;        
+    ray(z_index).th(ray_index)     = th;
+    ray(z_index).x(ray_index)      = x;
+    ray(z_index).y(ray_index)      = y;
+    ray(z_index).z(ray_index)      = z;
+    ray(z_index).hankel(ray_index) = hankel_type;
+end
+
+function [r, th, x, y, hankel] = get_values_ray(ray,ray_index)
     r  = ray.r(ray_index);
     th = ray.th(ray_index);
+    x  = ray.x(ray_index);
+    y = ray.y(ray_index);
+    hankel =ray.hankel(ray_index);
 end
 
-function ray = get_default_ray(x,y,z)
+
+function ray = get_default_ray(x, y, z, hankel_type)
     [th,r] = cart2pol(x,y);
     ray    = struct();
     ray.x  = x;
@@ -221,8 +265,9 @@ function ray = get_default_ray(x,y,z)
     ray.r  = r;
     ray.th = th;
     ray.z  = z;
+%     ray.cartpoint = [x,y,z];
+    ray.hankel = hankel_type;
 end
-
 function plot_rays(rays, scaleFactorX, color)
     for ray_index = 1:size(rays.x,2)
         xRay = scaleFactorX*rays.x(ray_index);
@@ -256,7 +301,7 @@ function [resultStruct] = mergeStructure(mainStruct,struct2merge)
     resultStruct = table2struct(T,"ToScalar",true);
 end
 
-function rays_structure = get_init_rays_structure(xt,yt,radiusObs,number_rays)
+function rays_structure = get_init_rays_structure(xt,yt,radiusObs,number_rays, hankel_type)
     rays_structure = ([]);
 
     for ray_index = 1:number_rays
@@ -264,9 +309,9 @@ function rays_structure = get_init_rays_structure(xt,yt,radiusObs,number_rays)
         yi = yt + radiusObs*sin(ray_index*(2*pi)/(number_rays));
         zi = 0;
     
-        rayH1 = get_default_ray(xi, yi,zi);
+        ray = get_default_ray(xi, yi, zi, hankel_type);
         
-        [rays_structure] = mergeStructure(rays_structure,rayH1);
+        [rays_structure] = mergeStructure(rays_structure,ray);
     
     end
 end
