@@ -88,9 +88,9 @@ g = LGnm;
 pxy=max(max(g));
 
 sigmaLZ0  = LPz0.laguerreWaist; % cintura de Laguerre en z=0
-radiusObs = sigmaLZ0/4.5;%%sigmaLZ0/4;%sigmaLo/4;        
+radiusObs = sigmaLZ0/5;...4.5 sigmaLZ0/4.5;%%sigmaLZ0/4;%sigmaLo/4;        
 %traslado
-xt = 0.0;...2.3*radiusObs;...1.1*radiusObs;%.15*sigmaLo;
+xt = 2.5*radiusObs;... 0.0;...2.3*radiusObs;...1.1*radiusObs;%.15*sigmaLo;
 yt = 0.01;   %xt=0;
 
 [~,ro]      = cart2pol(X-xt,X'-yt);   
@@ -122,14 +122,23 @@ for z_index = 2:length(z)
     rayH1 = raysH1(z_index-1);
     rayH2 = raysH2(z_index-1);
     zi    = z(z_index-1);
-    
+    get_default_figure();
     fig = figure(6);
+    fig.Position = [514 364 494 525];
+
+%     AxesH = axes;
+%     InSet = get(AxesH, 'TightInset');
+%     set(AxesH, 'Position', [InSet(1:2), 1-InSet(1)-InSet(3), 1-InSet(2)-InSet(4)])
     get_plot_intensity(xNormalized, xNormalized, g, pxy);
     hold on
     plot_rays(rayH1, scaleFactorX, 'r');
     plot_rays(rayH2, scaleFactorX, 'y');
     hold off
-    title([' z = ',num2str(scaleFactorZ*zi)])
+    title(['$ z/z_R = $',num2str(scaleFactorZ*zi)],Interpreter="latex")
+    set(gca, 'FontSize', 14)
+
+    path_file = ['images\Lm0_z_',num2str(scaleFactorZ*zi),'n.png'];
+    print(path_file, '-dpng', '-r600')
 
     for ray_index = 1:total_rays
         
@@ -272,10 +281,52 @@ function get_plot_intensity(xNormalized, ...
     pxyz   = g(1,1);
     g(1,1) = pxy;
     imagesc(xNormalized,yNormalized,abs(g))
+    xlabel('$x/w_0$',Interpreter='latex')
+    ylabel('$y/w_0$',Interpreter='latex')
     g(1,1) = pxyz;
     colormap(mapgreen)
     set(gca,'YDir','normal')
     axis square
 
 
+end
+
+function get_default_figure()
+
+% Defaults for this blog post
+width = 8;     % Width in inches
+height = 5;    % Height in inches
+alw = 0.75;    % AxesLineWidth
+fsz = 30;      % Fontsize
+lw = 1.5;      % LineWidth
+msz = 8;       % MarkerSize
+
+% The properties we've been using in the figures
+set(0,'defaultLineLineWidth',lw);   % set the default line width to lw
+set(0,'defaultLineMarkerSize',msz); % set the default line marker size to msz
+set(0,'defaultLineLineWidth',lw);   % set the default line width to lw
+set(0,'defaultLineMarkerSize',msz); % set the default line marker size to msz
+% set(0,'FontSize',     fsz);
+% Set the default Size for display
+defpos = get(0,'defaultFigurePosition');
+set(0,'defaultFigurePosition', [defpos(1)-40, defpos(2)-40, width*100, height*100]);
+
+% Set the defaults for saving/printing to a file
+set(0,'defaultFigureInvertHardcopy','on'); % This is the default anyway
+set(0,'defaultFigurePaperUnits','inches'); % This is the default anyway
+defsize = get(gcf, 'PaperSize');
+left = (defsize(1)- width)/2;
+bottom = (defsize(2)- height)/2;
+defsize = [left, bottom, width, height];
+set(0, 'defaultFigurePaperPosition', defsize);
+set(gca, 'LooseInset', get(gca,'TightInset'))
+set(gca, 'FontSize', fsz, 'LineWidth', alw); %<- Set properties
+
+end
+
+function resize_fcn
+set(gcf,'units','pixels');
+set(gca,'units','pixels');
+w_pos = get(gcf, 'position');
+set(gca, 'position', [0 0 w_pos(3) w_pos(4)]);
 end
