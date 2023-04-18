@@ -90,7 +90,7 @@ pxy=max(max(g));
 sigmaLZ0  = LPz0.laguerreWaist; % cintura de Laguerre en z=0
 radiusObs = sigmaLZ0/4.5;%%sigmaLZ0/4;%sigmaLo/4;        
 %traslado
-xt = 2.3*radiusObs;...1.1*radiusObs;%.15*sigmaLo;
+xt = 0.0;...2.3*radiusObs;...1.1*radiusObs;%.15*sigmaLo;
 yt = 0.01;   %xt=0;
 
 [~,ro]      = cart2pol(X-xt,X'-yt);   
@@ -151,7 +151,7 @@ for z_index = 2:length(z)
                                        ri, thi, zi, ...
                                        dx, dth, dz);
 
-        [ri, zi, thi] = ray_tracing_cylindrical(ri, zi, thi, grad_f(1), grad_f(3), grad_f(2), drho, dz, dth);
+        [ri, zi, thi] = ray_tracing_cylindrical(ri, zi, thi, grad_f(1), grad_f(3), grad_f(2), sqrt(2)*drho, dz, dth);
 
         raysH1 = save_actual_values_on_ray(raysH1, z_index, ray_index, ...
                                            ri, thi,zi);
@@ -173,7 +173,7 @@ for z_index = 2:length(z)
                                        dx, dth, dz);
         step = sqrt(dz^2+dx^2+dx^2);
   
-        [ri, zi, thi] = ray_tracing_cylindrical(ri, zi, thi, grad_H2(1), grad_H2(3), grad_H2(2), drho, dz, dth);
+        [ri, zi, thi] = ray_tracing_cylindrical(ri, zi, thi, grad_H2(1), grad_H2(3), grad_H2(2), sqrt(2)*drho, dz, dth);
         raysH2 = save_actual_values_on_ray(raysH2, z_index, ray_index, ...
                                            ri, thi,zi);
 
