@@ -5,6 +5,7 @@ function gradcart = cylindrical2cartesiangrad(gradcyl, thi)
     grad_y = gradcyl(1)*sin(thi) + gradcyl(2)*cos(thi);
     grad_z = gradcyl(3);
     gradcart = [grad_x, grad_y, grad_z];
+    gradcart = gradcart/norm(gradcart);
 
 end
 

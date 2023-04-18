@@ -10,7 +10,7 @@ mapgreen = AdvancedColormap('kbcw',256,[0 30 100 255]/255);  %color del haz
 
 % Parameters for define all parameters of Laguerre
 nu = 14;
-mu = 00;
+mu = 10;
 initialWaist = 100;
 wavelength   = 0.6328;
 initialZ     = 0;
@@ -98,7 +98,7 @@ obstruction = double(ro<=radiusObs);
 clear ro                         
 g=g.*(1-obstruction);
 
-total_rays = 9; 
+total_rays = 50; 
 hankel_type = 1;
 raysH1 = get_init_rays_structure(xt, yt, radiusObs, total_rays, hankel_type);
 hankel_type = 2;
@@ -117,7 +117,7 @@ gg(:,1,:) = g';
 v = VideoWriter('LGmomentum.avi');
 open(v);
 
-difcart = [4*dx,4*dx,dz];
+difcart = [dx,dx,dz];
 
 for z_index = 2:length(z) 
 
@@ -140,7 +140,7 @@ for z_index = 2:length(z)
     title(['$ z/z_R = $',num2str(scaleFactorZ*zi)],Interpreter="latex")
     set(gca, 'FontSize', 14)
 
-    path_file = ['images\Lm0_z_',num2str(scaleFactorZ*zi),'n.png'];
+    path_file = ['images\Ln14m10_z_',num2str(scaleFactorZ*zi),'n.png'];
     print(path_file, '-dpng', '-r600')
 
     for ray_index = 1:total_rays
