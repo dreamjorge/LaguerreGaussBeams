@@ -13,9 +13,9 @@ function [r_new, z_new, phi_new] = ray_tracing_cylindrical(r, z, phi, grad_r, gr
     grad = [grad_x, grad_y, grad_z];
 
     % Calculate new position of ray tracing in Cartesian coordinates
-    [step_x ,  step_y] = pol2cart(step_phi,step_r);
-    x_new = r*cos(phi) - grad(1)*step_x;
-    y_new = r*sin(phi) - grad(2)*step_y;
+%     [step_x ,  step_y] = pol2cart(step_phi,step_r);
+    x_new = r*cos(phi) - grad(1)*step_r;
+    y_new = r*sin(phi) - grad(2)*step_r;
     z_new = z - grad(3)*step_z;
 %     
     % Convert new position from Cartesian to cylindrical coordinates
